@@ -5,6 +5,8 @@ const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
 const connectToDB = require('./DB/db');
 const userRoutes = require('./Routes/user.route');
+const messageRoutes = require('./Routes/message.route'); 
+
 
 const app = express();
 app.use(cors({
@@ -23,6 +25,7 @@ app.use(fileUpload({
 }));
 
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/messages', messageRoutes);
 
 connectToDB();
 
