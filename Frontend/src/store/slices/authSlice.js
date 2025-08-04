@@ -39,6 +39,18 @@ export const login = createAsyncThunk("users/signin", async (data, thunkAPI) => 
     }
 })
 
+export const signup = createAsyncThunk("auth/signup" , async(data,thunkAPI) =>{
+    try {
+        const res = await axios.post('/users/signup',data);
+        connectSocket(res.data);
+        toast.success("Account created successfully!");
+        return res.data;
+    } catch (error) {
+        toast.error(error.response.data.message || 'Failed to sign Up');
+        return thunkAPI.rejectWithValue(error.response.data.message || 'Failed to sign Up');
+    }
+})
+
 const authSlice = createSlice({
     name: 'auth',
     initialState: {
@@ -80,6 +92,16 @@ const authSlice = createSlice({
         .addCase(login.rejected, (state)=>{
             state.isLoggingIn = false;
         })
+        .addCase(signup.pending , (state)=>{
+            state.isSigningUp = true;
+        })
+        .addCase(signup.fulfilled, (state, action)=>{
+            state.authUser = action.payload;
+            state.isSigningUp = false;
+        })
+        .addCase(signup.rejected, (state)=>{
+            state.isSigningUp = false;
+        });
     }
 })
 

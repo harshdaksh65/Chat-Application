@@ -22,7 +22,7 @@ const Login = () => {
   return <>
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white">
     {/* LEFT side - form */}
-    <div className="flex items-center justify-center px-6 py-12 ">
+    <div className="flex flex-col items-center justify-center px-6 py-12 ">
       <div className="w-full max-w-md">
         {/* LOGO & HEADING */}
         <div className="flex flex-col items-center text-center mb-10">
@@ -75,10 +75,11 @@ const Login = () => {
             }
           </button>
         </form> 
-
+        
+        {/* footer */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
-            Don&apos;t have and account? {" "}
+            Don&apos;t have an account? {" "}
             <Link to={'/register'} className="text-blue-600 hover:underline">Create account</Link>
           </p>
         </div>

@@ -22,19 +22,21 @@ function App() {
   }, [getUsers]);
 
 
-  useEffect(()=>{
-    if(authUser) {
-      const socket = connectSocket(authUser._id);
+  useEffect(() => {
+  if (!isCheckingAuth && authUser) {
+    const socket = connectSocket(authUser._id);
 
-      socket.on('getOnlineUsers', (Users) => {
-        dispatch(setOnlineUsers(Users));
-      });
+    socket.on('getOnlineUsers', (Users) => {
+      console.log("Received online users:", Users); // 👈 debug
+      dispatch(setOnlineUsers(Users));
+    });
 
-      return () => {
-        disconnectSocket();
-      }
-    }
-  }, [authUser]);
+    return () => {
+      disconnectSocket();
+    };
+  }
+}, [authUser, isCheckingAuth, dispatch]);
+
 
   if (isCheckingAuth && !authUser) {
     return (
