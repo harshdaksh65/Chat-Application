@@ -2,9 +2,9 @@ const {catchAsyncError} = require("../middlewares/catchAsyncError.middleware");
 const User = require("../models/user.model");
 const Message = require("../models/message.model");
 const { get } = require("mongoose");
-const { getReceiverSocket } = require("../utils/socket");
+const { getReceiverSocket, getIO } = require("../utils/socket");
 const cloudinary = require("cloudinary").v2;
-const io = require("../utils/socket").io;
+const socket = require("../utils/socket");
 
 exports.getAllUsers = catchAsyncError(async (req, res, next) => {
   const user = req.user;
@@ -65,31 +65,40 @@ exports.sendMessage = catchAsyncError(async (req, res, next) => {
     });
   }
 
-  let mediaUrl = ""
+  let mediaUrl = "";
 
-  if (media) {
-    try {
-        const uploadedResponse = await cloudinary.uploader.upload(
-            media.tempFilePath,{
-                resource_type: "auto",
-                folder: "ChatApp/Media",
-                transformation:[
-                    { width: 1080, height: 1080, crop: "limit" },
-                    { quality: "auto", fetch_format: "auto" }
-                ]
-            }
-        );
-        mediaUrl = uploadedResponse?.secure_url;
-    } catch (error) {
-        console.error("Error uploading media:", error);
-    }
-
+if (media) {
+  try {
+    const uploadedResponse = await cloudinary.uploader.upload(
+      media.tempFilePath,
+      {
+        resource_type: "auto",
+        folder: "ChatApp/Media",
+        transformation: [
+          { width: 1080, height: 1080, crop: "limit" },
+          { quality: "auto", fetch_format: "auto" },
+        ],
+      }
+    );
+    mediaUrl = uploadedResponse?.secure_url;
+  } catch (error) {
+    console.error("Error uploading media:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to upload media",
+    });
   }
-
+}
+  console.log({
+  senderId,
+  receiverId,
+  sanitizedText,
+  media,
+});
 
   const message = await Message.create({
-    senderId,
-    receiverId,
+    senderID: senderId,
+    receiverID: receiverId,
     text: sanitizedText,
     media: mediaUrl,
   });
@@ -97,7 +106,9 @@ exports.sendMessage = catchAsyncError(async (req, res, next) => {
   const receiverSocketID = getReceiverSocket(receiverId);
     if (receiverSocketID) {
         
-        io.to(receiverSocketID).emit("newMessage", message);
+      const ioInstance = getIO(); // ✅ Get initialized Socket.IO instance
+      ioInstance.to(receiverSocketID).emit("newMessage", message);
+
     }
   res.status(201).json({
     success: true,

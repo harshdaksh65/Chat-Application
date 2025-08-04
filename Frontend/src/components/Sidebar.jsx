@@ -58,8 +58,8 @@ const Sidebar = () => {
         <div className="overflow-y-auto w-full py-3">
           {
             filteredUsers?.length > 0  && filteredUsers.map(user => {
-              return (<button key={user._id} onClick={()=> dispatch(setSelectedUser(user))}
-              className={`w-full flex items-center justify-center lg:justify-start gap-2 transition-colors rounded-md ${
+              return (<button key={user._id}  onClick={()=> dispatch(setSelectedUser(user))}
+              className={`w-full flex items-center px-3 py-1 justify-center lg:justify-start gap-2 transition-colors rounded-md ${
                 selectedUser?._id === user._id ? "bg-gray-200 ring-gray-200" : "hover:bg-gray-200" 
               }`}
               >

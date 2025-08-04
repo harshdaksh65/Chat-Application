@@ -31,9 +31,15 @@ function initSocket(server) {
   });
 }
 
+function getIO() {
+  if (!io) {
+    throw new Error("Socket.io not initialized! Call initSocket(server) first.");
+  }
+  return io;
+}
 
 function getReceiverSocket(userId) {
   return userSocketMap[userId];
 }
 
-module.exports = { io, initSocket, getReceiverSocket };
+module.exports = { getIO, initSocket, getReceiverSocket };
