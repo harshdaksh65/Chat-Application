@@ -45,7 +45,7 @@ exports.getMessages = catchAsyncError(async (req, res, next) => {
 exports.sendMessage = catchAsyncError(async (req, res, next) => {
   const { id: receiverId } = req.params;
   const { text } = req.body;
-  const media = req?.file?.media;
+  const media = req?.files?.media;
   const senderId = req.user._id;
 
   const receiver = await User.findById(receiverId);
@@ -66,6 +66,7 @@ exports.sendMessage = catchAsyncError(async (req, res, next) => {
   }
 
   let mediaUrl = "";
+console.log("MEDIA", media); // <- helpful debugging log
 
 if (media) {
   try {

@@ -27,40 +27,39 @@ const ChatContainer = () => {
   }, [messages]);
 
   function formatMessageTime(data) {
-  const date = new Date(data);
-  if (isNaN(date)) return "Invalid time";
-  return date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-}
+    const date = new Date(data);
+    if (isNaN(date)) return "Invalid time";
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  }
 
   useEffect(() => {
-  if (!selectedUser?._id) return;
+    if (!selectedUser?._id) return;
 
-  dispatch(getMessages(selectedUser._id)); // Initial load
-  const socket = getSocket();
-  if (!socket) return;
+    dispatch(getMessages(selectedUser._id)); // Initial load
+    const socket = getSocket();
+    if (!socket) return;
 
-  // ✅ ADD THIS BLOCK
-  const handleNewMessage = (message) => {
-    console.log("🔁 Received via socket:", message);
-    if (
-      message.senderID === selectedUser._id ||
-      message.receiverID === selectedUser._id
-    ) {
-      dispatch({ type: "chat/pushNewMessage", payload: message });
-    }
-  };
+    // ✅ ADD THIS BLOCK
+    const handleNewMessage = (message) => {
+      console.log("🔁 Received via socket:", message);
+      if (
+        message.senderID === selectedUser._id ||
+        message.receiverID === selectedUser._id
+      ) {
+        dispatch({ type: "chat/pushNewMessage", payload: message });
+      }
+    };
 
-  socket.on("newMessage", handleNewMessage);
+    socket.on("newMessage", handleNewMessage);
 
-  return () => {
-    socket.off("newMessage", handleNewMessage); // Clean up
-  };
-}, [selectedUser?._id]);
-
+    return () => {
+      socket.off("newMessage", handleNewMessage); // Clean up
+    };
+  }, [selectedUser?._id]);
 
   if (isMessagesLoading) {
     return (
@@ -79,7 +78,9 @@ const ChatContainer = () => {
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {messages.length > 0 &&
             messages.map((message, index) => {
-              const isSender = message.senderID?._id === authUser?._id || message.senderID === authUser?._id;
+              const isSender =
+                message.senderID?._id === authUser?._id ||
+                message.senderID === authUser?._id;
               return (
                 <div
                   key={message._id || index}
@@ -92,10 +93,20 @@ const ChatContainer = () => {
                       isSender ? "order-2 ml-3" : "order-1 mr-3"
                     }`}>
                     <img
-                      src={isSender ? authUser?.avatar?.url || "/avatar-holder.avif" : selectedUser?.avatar?.url || "/avatar-holder.avif"}
-                      alt="/avatar-holder.avif"
+                      src={
+                        isSender && authUser?.avatar?.url
+                          ? authUser.avatar.url || "/avatar-holder.avif"
+                          : selectedUser?.avatar?.url || "/avatar-holder.avif"
+                      }
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/avatar-holder.avif";
+                      }}
+                      alt="User Avatar"
                       className="w-full h-full object-cover"
                     />
+
+                    
                   </div>
                   {/* BUBBLE  */}
 
@@ -107,19 +118,21 @@ const ChatContainer = () => {
                     }`}>
                     {message.media && (
                       <>
-                      { message.media.includes(".mp4") || message.media.includes(".webm") || message.media.includes(".mov")
-                        ? (<video
-                          src={message.media}
-                          controls
-                          className="w-full rounded-md mb-2"
-                        />
+                        {message.media.includes(".mp4") ||
+                        message.media.includes(".webm") ||
+                        message.media.includes(".mov") ? (
+                          <video
+                            src={message.media}
+                            controls
+                            className="w-full rounded-md mb-2"
+                          />
                         ) : (
-                        <img
-                          src={message.media}
-                          alt="Attachment"
-                          className="w-full rounded-md mb-2"
-                        />)
-                        }
+                          <img
+                            src={message.media}
+                            alt="Attachment"
+                            className="w-full rounded-md mb-2"
+                          />
+                        )}
                       </>
                     )}
 
@@ -133,7 +146,7 @@ const ChatContainer = () => {
               );
             })}
         </div>
-        <MessageInput/>
+        <MessageInput />
       </div>
     </>
   );

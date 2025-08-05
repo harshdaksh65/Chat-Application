@@ -48,35 +48,58 @@ const MessageInput = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
 
-    if (!text.trim() && !media) return;
+const handleSendMessage = async (e) => {
+  e.preventDefault();
 
-    const messageObj = {
-    senderID: authUser._id, // <-- you'll need to get authUser from Redux or context
+  if (!text.trim() && !media) return;
+
+  let uploadedMediaUrl = null;
+
+  // Upload media to backend/cloudinary
+  if (media) {
+    try {
+      const formData = new FormData();
+      formData.append("media", media); // ✅ field name should match backend
+
+      const { data } = await axios.post("/api/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      uploadedMediaUrl = data.url; // ✅ public URL returned by backend (e.g., Cloudinary)
+    } catch (error) {
+      console.error("Upload failed:", error);
+      toast.error("Media upload failed.");
+      return;
+    }
+  }
+
+  const messageObj = {
+    senderID: authUser._id,
     receiverID: selectedUser._id,
     text: text.trim(),
-    media: media ? URL.createObjectURL(media) : null, // local preview URL
+    media: uploadedMediaUrl, // ✅ actual public URL for both sender & receiver
     createdAt: new Date().toISOString(),
-    isTemp: true, // mark it as temporary
   };
 
-  // 1. Instantly update Redux
-  dispatch({ type: "chat/pushNewMessage", payload: messageObj });
+  // 1. Update Redux so sender sees it instantly
+  dispatch({ type: "chat/pushNewMessage", payload: { ...messageObj, isTemp: true } });
 
-    const data = new FormData();
-    data.append("text", text.trim());
-    data.append("media", media);
+  // 2. Emit to receiver
+  const socket = getSocket();
+  if (socket) {
+    socket.emit("newMessage", messageObj); // ✅ receiver now gets correct media URL
+  }
+
+  // 3. Reset
+  setText("");
+  setMedia(null);
+  setMediaPreview(null);
+  setMediaType("");
+  if (fileInputRef.current) fileInputRef.current.value = "";
+};
 
 
-    // Reset All
-    setText("");
-    setMedia(null);
-    setMediaPreview(null);
-    setMediaType("");
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
 
   useEffect(() => {
     const socket = getSocket();

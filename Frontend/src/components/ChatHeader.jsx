@@ -13,10 +13,15 @@ const ChatHeader = () => {
         <div className="flex items-center gap-3">
           {/* AVATAR */}
           <div className="relative w-10 h-10">
+            
             <img
-              src={selectedUser?.avatar?.url || "/avatar-holder.avif"}
-              alt="/avatar-holder.avif"
-              className="w-full h-full object-cover rounded-full"
+              className="w-12 h-12 object-cover rounded-full"
+              src={selectedUser?.avatar?.url ? selectedUser.avatar.url : "/avatar-holder.avif"}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/avatar-holder.avif";
+              }}
+              alt="User Avatar"
             />
             {onlineUsers.includes(selectedUser?._id) && (
               <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-white border-2 rounded-full" />

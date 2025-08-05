@@ -7,7 +7,7 @@ let io;
 function initSocket(server) {
   io = new Server(server, {
     cors: {
-      origin: [process.env.FRONTEND_URL]
+      origin: [process.env.FRONTEND_URL],
     },
   });
 
@@ -16,24 +16,33 @@ function initSocket(server) {
 
     const userId = socket.handshake.query.userId;
 
-    if(userId) {
+    if (userId) {
       userSocketMap[userId] = socket.id;
     }
 
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    socket.on("newMessage", (message) => {
+      const receiverSocketId = userSocketMap[message.receiverID];
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("newMessage", message);
+      }
+    });
+    
 
-    socket.on("disconnect",()=>{
-        console.log("Client disconnected", socket.id);
-        delete userSocketMap[userId];
-        
-        io.emit("getOnlineUsers", Object.keys(userSocketMap));
-    })
+    socket.on("disconnect", () => {
+      console.log("Client disconnected", socket.id);
+      delete userSocketMap[userId];
+
+      io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    });
   });
 }
 
 function getIO() {
   if (!io) {
-    throw new Error("Socket.io not initialized! Call initSocket(server) first.");
+    throw new Error(
+      "Socket.io not initialized! Call initSocket(server) first."
+    );
   }
   return io;
 }
