@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import SidebarSkeleton from "../components/skeletons/SidebarSkeleton";
 import { getUsers, setSelectedUser } from "../store/slices/chatSlice";
-import { Bluetooth, Users } from "lucide-react";
+import { Bluetooth, Users, EllipsisVertical, LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
+import { logout } from "../store/slices/authSlice";
 
 const Sidebar = () => {
   const [ShowOnlineOnly, setShowOnlineOnly] = useState(false);
@@ -27,14 +29,53 @@ const Sidebar = () => {
 
   if (isUsersLoading) return <SidebarSkeleton />;
 
+  const handleLogout = () => {
+    dispatch(logout());
+  };
+
+  
+  
+
   return (
     <>
       <aside className="h-full w-20 lg:w-72 border-r border-gray-200 flex flex-col transition-all duration-200 bg-white">
         {/* header */}
+
+        <div className="flex justify-between items-center">
+          <Link
+            to={`/profile/${authUser.id}`}
+            className="flex justify-start items-center ">
+            <div className="flex items-center px-3 py-1 justify-center lg:justify-start gap-2 transition-colors rounded-md">
+              <img
+                className="w-12 h-12 object-cover rounded-full"
+                src={
+                  authUser?.avatar?.url
+                    ? authUser.avatar.url
+                    : "/avatar-holder.avif"
+                }
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "/avatar-holder.avif";
+                }}
+                alt="User Avatar"
+              />
+            </div>
+            <div className="hidden lg:block">
+              <h1 className="font-semibold">{authUser.username}</h1>
+              <h4 className="text-xs font-medium opacity-35">
+                {authUser.email}
+              </h4>
+            </div>
+          </Link>
+          <div className="hidden lg:block mr-2 relative" >
+            <EllipsisVertical size={20} />
+            
+          </div>
+        </div>
         <div className="border-b border-gray-200 w-full p-5">
           <div className="flex items-center gap-2">
             <Users className="w-6 h-6 text-gray-700" />
-            <span className="fonts-medium hidden lg:black text-gray-800">
+            <span className="font-medium hidden lg:block  text-gray-800">
               contacts
             </span>
           </div>
@@ -52,7 +93,7 @@ const Sidebar = () => {
               Show online Only
             </label>
             <span className="text-xs text-gray-500">
-              ({onlineUsers.filter((id) => id !== authUser._id).length} online)
+              ({onlineUsers.filter((id) => id !== authUser._id).length -1} online)
             </span>
           </div>
         </div>
@@ -66,7 +107,7 @@ const Sidebar = () => {
                 <button
                   key={user._id}
                   onClick={() => dispatch(setSelectedUser(user))}
-                  className={`w-full flex items-center px-3 py-1 justify-center lg:justify-start gap-2 transition-colors rounded-md ${
+                  className={`w-full mb-2 flex items-center px-3 py-1 justify-center lg:justify-start gap-2 transition-colors rounded-md ${
                     selectedUser?._id === user._id
                       ? "bg-gray-200 ring-gray-200"
                       : "hover:bg-gray-200"
