@@ -2,7 +2,7 @@ import { Image, Send, X, Video } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getSocket } from "../lib/Socket";
-import axios from "../lib/axios"; // ✅ Make sure axios is imported from correct path
+import axios from "../lib/axios"; // ✅ Make sure axios is imported correctly
 import { toast } from "react-toastify";
 
 const MessageInput = () => {
@@ -10,7 +10,10 @@ const MessageInput = () => {
   const [mediaPreview, setMediaPreview] = useState(null);
   const [media, setMedia] = useState(null);
   const [mediaType, setMediaType] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0); // ✅ NEW
+  const [isUploading, setIsUploading] = useState(false);   // ✅ NEW
   const fileInputRef = useRef(null);
+
   const dispatch = useDispatch();
   const { selectedUser } = useSelector((state) => state.chat);
   const { authUser } = useSelector((state) => state.auth);
@@ -48,47 +51,51 @@ const MessageInput = () => {
   };
 
   const handleSendMessage = async (e) => {
-    e.preventDefault(); // ✅ Prevent default form submission
+  e.preventDefault();
 
-    if (!text.trim() && !media) return;
+  if (!text.trim() && !media) return;
 
-    try {
-      const formData = new FormData();
-      formData.append("text", text); // ✅ match backend
-      if (media) {
-        formData.append("media", media); // ✅ match backend
-      }
-
-      // ✅ Send message and media in one request
-      const { data } = await axios.post(
-        `/messages/send/${selectedUser._id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      const messageObj = data.data;
-
-      // ✅ 1. Update Redux state
-      dispatch({ type: "chat/pushNewMessage", payload: messageObj });
-
-      // ✅ 2. Emit via socket
-      const socket = getSocket();
-      if (socket) {
-        socket.emit("newMessage", messageObj);
-      }
-
-      // ✅ 3. Reset form
-      setText("");
-      removeMedia();
-    } catch (err) {
-      console.error("❌ Failed to send message:", err);
-      toast.error("Failed to send message.");
+  try {
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("text", text);
+    if (media) {
+      formData.append("media", media);
     }
-  };
+
+    const { data } = await axios.post(
+      `/messages/send/${selectedUser._id}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (progressEvent) => {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(percent);
+        },
+      }
+    );
+
+    const messageObj = data.data;
+
+    // ✅ Sender sees it instantly
+    dispatch({ type: "chat/pushNewMessage", payload: messageObj });
+
+    // ❌ Removed manual socket.emit here — backend handles it
+
+    // Reset
+    setText("");
+    removeMedia();
+    setUploadProgress(0);
+    setIsUploading(false);
+  } catch (err) {
+    console.error("❌ Failed to send message:", err);
+    toast.error("Failed to send message.");
+    setIsUploading(false);
+  }
+};
+
 
   useEffect(() => {
     const socket = getSocket();
@@ -109,6 +116,17 @@ const MessageInput = () => {
 
   return (
     <div className="p-4 w-full">
+      {/* ✅ Upload progress bar */}
+      {isUploading && (
+        <div className="w-full h-2 bg-gray-200 rounded overflow-hidden mb-2">
+          <div
+            className="h-full bg-blue-500 transition-all duration-300 ease-in-out"
+            style={{ width: `${uploadProgress}%` }}
+          />
+        </div>
+      )}
+
+      {/* ✅ Media preview */}
       {mediaPreview && (
         <div className="mb-0 flex items-center gap-2">
           <div className="relative">
@@ -136,6 +154,7 @@ const MessageInput = () => {
         </div>
       )}
 
+      {/* ✅ Input + File + Send Form */}
       <form onSubmit={handleSendMessage} className="flex items-center gap-2">
         <div className="flex-1 flex gap-2">
           <input
@@ -153,6 +172,7 @@ const MessageInput = () => {
             className="hidden"
             onChange={handleMediaChange}
           />
+
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
@@ -167,7 +187,7 @@ const MessageInput = () => {
         <button
           type="submit"
           className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50"
-          disabled={!text.trim() && !media}
+          disabled={!text.trim() && !media || isUploading} // ✅ Disable while uploading
         >
           <Send size={22} />
         </button>
