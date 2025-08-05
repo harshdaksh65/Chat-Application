@@ -1,10 +1,9 @@
 import { Image, Send, X, Video } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useState } from "react";
 import { getSocket } from "../lib/Socket";
-import { sendMessage } from "../store/slices/chatSlice";
-
+import axios from "../lib/axios"; // ✅ Make sure axios is imported from correct path
+import { toast } from "react-toastify";
 
 const MessageInput = () => {
   const [text, setText] = useState("");
@@ -48,62 +47,51 @@ const MessageInput = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handleSendMessage = async (e) => {
+    e.preventDefault(); // ✅ Prevent default form submission
 
-const handleSendMessage = async (e) => {
-  e.preventDefault();
+    if (!text.trim() && !media) return;
 
-  if (!text.trim() && !media) return;
-
-  let uploadedMediaUrl = null;
-
-  // Upload media to backend/cloudinary
-  if (media) {
     try {
       const formData = new FormData();
-      formData.append("media", media); // ✅ field name should match backend
+      formData.append("text", text); // ✅ match backend
+      if (media) {
+        formData.append("media", media); // ✅ match backend
+      }
 
-      const { data } = await axios.post("/api/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      // ✅ Send message and media in one request
+      const { data } = await axios.post(
+        `/messages/send/${selectedUser._id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
-      uploadedMediaUrl = data.url; // ✅ public URL returned by backend (e.g., Cloudinary)
-    } catch (error) {
-      console.error("Upload failed:", error);
-      toast.error("Media upload failed.");
-      return;
+      const messageObj = data.data;
+
+      // ✅ 1. Update Redux state
+      dispatch({ type: "chat/pushNewMessage", payload: messageObj });
+
+      // ✅ 2. Emit via socket
+      const socket = getSocket();
+      if (socket) {
+        socket.emit("newMessage", messageObj);
+      }
+
+      // ✅ 3. Reset form
+      setText("");
+      removeMedia();
+    } catch (err) {
+      console.error("❌ Failed to send message:", err);
+      toast.error("Failed to send message.");
     }
-  }
-
-  const messageObj = {
-    senderID: authUser._id,
-    receiverID: selectedUser._id,
-    text: text.trim(),
-    media: uploadedMediaUrl, // ✅ actual public URL for both sender & receiver
-    createdAt: new Date().toISOString(),
   };
-
-  // 1. Update Redux so sender sees it instantly
-  dispatch({ type: "chat/pushNewMessage", payload: { ...messageObj, isTemp: true } });
-
-  // 2. Emit to receiver
-  const socket = getSocket();
-  if (socket) {
-    socket.emit("newMessage", messageObj); // ✅ receiver now gets correct media URL
-  }
-
-  // 3. Reset
-  setText("");
-  setMedia(null);
-  setMediaPreview(null);
-  setMediaType("");
-  if (fileInputRef.current) fileInputRef.current.value = "";
-};
-
-
 
   useEffect(() => {
     const socket = getSocket();
-
     if (!socket) return;
 
     const handleNewMessage = (newMessage) => {
@@ -119,8 +107,7 @@ const handleSendMessage = async (e) => {
     return () => socket.off("newMessage", handleNewMessage);
   }, [selectedUser?._id]);
 
-  return(
-  <>
+  return (
     <div className="p-4 w-full">
       {mediaPreview && (
         <div className="mb-0 flex items-center gap-2">
@@ -141,7 +128,8 @@ const handleSendMessage = async (e) => {
             <button
               onClick={removeMedia}
               type="button"
-              className="absolute -top-2 right-2 w-5 h-5 bg-zinc-800 text-white rounded-full flex items-center justify-center hove:bg-black">
+              className="absolute -top-2 right-2 w-5 h-5 bg-zinc-800 text-white rounded-full flex items-center justify-center hover:bg-black"
+            >
               <X className="w-3 h-3" />
             </button>
           </div>
@@ -165,16 +153,27 @@ const handleSendMessage = async (e) => {
             className="hidden"
             onChange={handleMediaChange}
           />
-          <button className={`hidden sm:flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 hover:border-gray-100 transition ${mediaPreview ? "text-emerald-500" : "text-gray-400"}`} type="button" onClick={()=> fileInputRef.current?.click()}>
-            <Image size={20}/>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className={`hidden sm:flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 hover:border-gray-100 transition ${
+              mediaPreview ? "text-emerald-500" : "text-gray-400"
+            }`}
+          >
+            <Image size={20} />
           </button>
         </div>
-        <button type="submit" className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition disbaled:opacity-50" disabled={!text.trim() && !media}>
-          <Send size={22}/>
+
+        <button
+          type="submit"
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50"
+          disabled={!text.trim() && !media}
+        >
+          <Send size={22} />
         </button>
       </form>
     </div>
-  </>);
+  );
 };
 
 export default MessageInput;
