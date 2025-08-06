@@ -1,8 +1,8 @@
-import { Image, Send, X, Video } from "lucide-react";
+import { Image, Send, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getSocket } from "../lib/Socket";
-import axios from "../lib/axios"; // ✅ Make sure axios is imported correctly
+import axios from "../lib/axios";
 import { toast } from "react-toastify";
 
 const MessageInput = () => {
@@ -10,8 +10,8 @@ const MessageInput = () => {
   const [mediaPreview, setMediaPreview] = useState(null);
   const [media, setMedia] = useState(null);
   const [mediaType, setMediaType] = useState("");
-  const [uploadProgress, setUploadProgress] = useState(0); // ✅ NEW
-  const [isUploading, setIsUploading] = useState(false);   // ✅ NEW
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
   const dispatch = useDispatch();
@@ -51,51 +51,48 @@ const MessageInput = () => {
   };
 
   const handleSendMessage = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!text.trim() && !media) return;
+    if (!text.trim() && !media) return;
 
-  try {
-    setIsUploading(true);
-    const formData = new FormData();
-    formData.append("text", text);
-    if (media) {
-      formData.append("media", media);
-    }
-
-    const { data } = await axios.post(
-      `/messages/send/${selectedUser._id}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(percent);
-        },
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append("text", text);
+      if (media) {
+        formData.append("media", media);
       }
-    );
 
-    const messageObj = data.data;
+      const { data } = await axios.post(
+        `/messages/send/${selectedUser._id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percent);
+          },
+        }
+      );
 
-    // ✅ Sender sees it instantly
-    dispatch({ type: "chat/pushNewMessage", payload: messageObj });
+      const messageObj = data.data;
 
-    // ❌ Removed manual socket.emit here — backend handles it
+      // ✅ Sender sees it instantly
+      dispatch({ type: "chat/pushNewMessage", payload: messageObj });
 
-    // Reset
-    setText("");
-    removeMedia();
-    setUploadProgress(0);
-    setIsUploading(false);
-  } catch (err) {
-    console.error("❌ Failed to send message:", err);
-    toast.error("Failed to send message.");
-    setIsUploading(false);
-  }
-};
-
+      // Reset
+      setText("");
+      removeMedia();
+      setUploadProgress(0);
+      setIsUploading(false);
+    } catch (err) {
+      console.error("❌ Failed to send message:", err);
+      toast.error("Failed to send message.");
+      setIsUploading(false);
+    }
+  };
 
   useEffect(() => {
     const socket = getSocket();
@@ -115,8 +112,8 @@ const MessageInput = () => {
   }, [selectedUser?._id]);
 
   return (
-    <div className="p-4 w-full">
-      {/* ✅ Upload progress bar */}
+    <div className="p-3 sm:p-4 w-full border-t border-gray-200">
+      {/* Upload progress bar */}
       {isUploading && (
         <div className="w-full h-2 bg-gray-200 rounded overflow-hidden mb-2">
           <div
@@ -126,41 +123,40 @@ const MessageInput = () => {
         </div>
       )}
 
-      {/* ✅ Media preview */}
+      {/* Media preview */}
       {mediaPreview && (
-        <div className="mb-0 flex items-center gap-2">
+        <div className="mb-2 flex items-center gap-2">
           <div className="relative">
             {mediaType === "image" ? (
               <img
                 src={mediaPreview}
                 alt="Preview"
-                className="w-20 h-20 object-cover rounded-lg border border-gray-700"
+                className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border border-gray-300"
               />
             ) : (
               <video
                 src={mediaPreview}
                 controls
-                className="w-32 h-20 object-cover rounded-lg border border-gray-700"
+                className="w-24 h-16 sm:w-32 sm:h-20 object-cover rounded-lg border border-gray-300"
               />
             )}
             <button
               onClick={removeMedia}
               type="button"
-              className="absolute -top-2 right-2 w-5 h-5 bg-zinc-800 text-white rounded-full flex items-center justify-center hover:bg-black"
-            >
+              className="absolute -top-2 -right-2 w-5 h-5 bg-gray-800 text-white rounded-full flex items-center justify-center hover:bg-black">
               <X className="w-3 h-3" />
             </button>
           </div>
         </div>
       )}
 
-      {/* ✅ Input + File + Send Form */}
+      {/* Input + File + Send Form */}
       <form onSubmit={handleSendMessage} className="flex items-center gap-2">
         <div className="flex-1 flex gap-2">
           <input
             type="text"
             placeholder="Type a message..."
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+            className="w-full px-3 sm:px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
@@ -176,20 +172,18 @@ const MessageInput = () => {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className={`hidden sm:flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 hover:border-gray-100 transition ${
-              mediaPreview ? "text-emerald-500" : "text-gray-400"
-            }`}
-          >
-            <Image size={20} />
+            className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-gray-300 hover:border-gray-400 transition ${
+              mediaPreview ? "text-emerald-500 border-emerald-500" : "text-gray-400"
+            }`}>
+            <Image size={16} className="sm:w-5 sm:h-5" />
           </button>
         </div>
 
         <button
           type="submit"
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50"
-          disabled={!text.trim() && !media || isUploading} // ✅ Disable while uploading
-        >
-          <Send size={22} />
+          className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={(!text.trim() && !media) || isUploading}>
+          <Send size={16} className="sm:w-5 sm:h-5" />
         </button>
       </form>
     </div>

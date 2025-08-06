@@ -63,7 +63,7 @@ const ChatContainer = () => {
 
   if (isMessagesLoading) {
     return (
-      <div className="flex-1 flex flex-col overflow-auto">
+      <div className="flex-1 flex flex-col overflow-auto w-full">
         <ChatHeader />
         <MessagesSkeleton />
         <MessageInput />
@@ -73,7 +73,7 @@ const ChatContainer = () => {
 
   return (
     <>
-      <div className="flex-1 flex flex-col overflow-hidden bg-white">
+      <div className="flex-1 flex flex-col overflow-hidden bg-white w-full mt-16 md:mt-0">
         <ChatHeader />
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {messages.length > 0 &&
@@ -89,8 +89,8 @@ const ChatContainer = () => {
                   }`}
                   ref={index === messages.length - 1 ? messageEndRef : null}>
                   <div
-                    className={`w-10 h-10 rounded-full overflow-hidden border shrink-0 ${
-                      isSender ? "order-2 ml-3" : "order-1 mr-3"
+                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border shrink-0 ${
+                      isSender ? "order-2 ml-2 sm:ml-3" : "order-1 mr-2 sm:mr-3"
                     }`}>
                     <img
                       src={
@@ -105,15 +105,12 @@ const ChatContainer = () => {
                       alt="User Avatar"
                       className="w-full h-full object-cover"
                     />
-
-                    
                   </div>
                   {/* BUBBLE  */}
-
                   <div
-                    className={`max-w-xs sm:max-w-sm md:max-w-md px-4 py-2 rounded-xl text-sm ${
+                    className={`max-w-[75%] sm:max-w-xs md:max-w-md px-3 sm:px-4 py-2 rounded-xl text-sm ${
                       isSender
-                        ? "text-black order-1 bg-blue-400/20"
+                        ? "text-white font-medium order-1 bg-gradient-to-r from-blue-500 to-purple-600"
                         : "bg-gray-200 text-black order-2"
                     }`}>
                     {message.media && (
@@ -136,9 +133,9 @@ const ChatContainer = () => {
                       </>
                     )}
 
-                    {message.text && <p>{message.text}</p>}
+                    {message.text && <p className="break-words">{message.text}</p>}
 
-                    <span className="block text-[10px] mt-1 text-right text-gray-400">
+                    <span className="block text-[10px] text-right text-gray-400 mt-1">
                       {formatMessageTime(message.createdAt)}
                     </span>
                   </div>

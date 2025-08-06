@@ -1,4 +1,4 @@
-import { LogOut, MessageSquare, Settings, User } from "lucide-react";
+import { LogOut, MessageSquare, MessageSquareDashed, Settings, User } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { logout } from "../store/slices/authSlice";
@@ -19,7 +19,7 @@ const Navbar = () => {
           <div className="flex items-center gap-8">
             <Link to={'/'} className="flex items-center gap-2.5 hover:opacity-80 transition"> 
             <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center">
-              <MessageSquare className="w-5 h-5 text-blue-600" />
+              <MessageSquareDashed className="w-5 h-5 text-blue-600" />
             </div>
             <h1 className="text-lg font-bold text-gray-800">Talkie</h1>
             </Link>
