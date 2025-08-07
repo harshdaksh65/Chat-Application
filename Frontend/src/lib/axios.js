@@ -1,9 +1,10 @@
 import axios from 'axios';
 
 const instance = axios.create({
-    baseURL: import.meta.env.Backend_URL || import.meta.env.MODE === 'development'
-        ? 'http://localhost:3000/api/v1'
-        : '/',
+    baseURL: import.meta.env.Backend_URL ||
+  (import.meta.env.MODE === 'development'
+    ? 'http://localhost:3000/api/v1'
+    : 'https://talkie-qm4i.onrender.com/api/v1'),
     withCredentials: true,
 });
 
