@@ -12,31 +12,31 @@ const ChatHeader = () => {
   };
 
   return (
-    <div className="p-3 bg-gray-200 ring-1 ring-gray-300">
-      <div className="flex items-center justify-between">
+    <div className="p-3 bg-gray-200 ring-1 ring-gray-300 relative z-30">
+      <div className="h-10 flex items-center justify-between">
         {/* USER INFO */}
         <div className="flex items-center gap-3">
           {/* Back Button - Mobile Only */}
           <button
             onClick={handleBackToSidebar}
-            className="lg:hidden p-2 hover:bg-gray-300 rounded-full transition-colors"
+            className="lg:hidden p-2 hover:bg-gray-300 rounded-full"
             aria-label="Back to sidebar">
             <ArrowLeft className="w-5 h-5 text-gray-700" />
           </button>
 
           {/* AVATAR */}
-          <div className="relative w-10 h-10">
+          <div className="relative">
             <img
               className="w-12 h-12 object-cover rounded-full"
-              src={selectedUser?.avatar?.url ? selectedUser.avatar.url : "/avatar-holder.avif"}
+              src={selectedUser?.avatar?.url ? selectedUser.avatar.url : "/user-circle-svgrepo-com.svg"}
               onError={(e) => {
                 e.target.onerror = null;
-                e.target.src = "/avatar-holder.avif";
+                e.target.src = "/user-circle-svgrepo-com.svg";
               }}
               alt="User Avatar"
             />
             {onlineUsers.includes(selectedUser?._id) && (
-              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-white border-2 rounded-full" />
+              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-white border-2 rounded-full animate-pulse" />
             )}
           </div>
 
@@ -51,8 +51,8 @@ const ChatHeader = () => {
         {/* Close Button - Desktop Only */}
         <button
           onClick={handleBackToSidebar}
-          className="hidden lg:block text-gray-800 hover:text-black transition">
-          <X className="w-5 h-5" />
+          className="hidden lg:block text-gray-800 hover:text-black">
+          <X className="w-5 h-5 hover:text-red-300 cursor-pointer" />
         </button>
       </div>
     </div>

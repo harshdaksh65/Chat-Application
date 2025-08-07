@@ -8,21 +8,25 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="flex items-center justify-center lg:pt-20 lg:px-4">
-        <div className="bg-white lg:rounded-lg lg:shadow-md w-full max-w-6xl h-screen lg:h-[calc(100vh-8rem)]">
-          <div className="flex h-full overflow-hidden">
-            {/* Mobile: Show sidebar when no user selected, hide when user selected */}
-            {/* Desktop: Always show sidebar */}
+      <div className="flex items-center justify-center lg:pt-20 lg:px-4 ">
+        <div className="bg-white overflow-hidden rounded-lg lg:rounded-lg lg:shadow-md w-full max-w-6xl h-screen lg:h-[calc(100vh-8rem)]">
+          <div className="flex h-full overflow-hidden relative">
+            {/* Sidebar with smooth slide animation */}
             <div className={`${
-              selectedUser ? 'hidden lg:flex' : 'flex'
-            } h-full`}>
+              selectedUser ? 'lg:flex' : 'flex'
+            } h-full transition-all duration-500 ease-in-out lg:relative lg:translate-x-0 ${
+              selectedUser 
+                ? 'absolute inset-0 -translate-x-full lg:translate-x-0 z-10 opacity-0 lg:opacity-100' 
+                : 'absolute inset-0 translate-x-0 z-20 lg:relative lg:z-auto opacity-100'
+            }`}>
               <Sidebar />
             </div>
 
-            {/* Mobile: Show chat when user selected, hide when no user selected */}
-            {/* Desktop: Always show chat area */}
-            <div className={`flex-1 ${
-              selectedUser ? 'flex' : 'hidden lg:flex'
+            {/* Chat container with smooth slide animation */}
+            <div className={`flex-1 transition-all duration-500 ease-in-out lg:relative lg:translate-x-0 ${
+              selectedUser 
+                ? 'absolute inset-0 translate-x-0 z-20 lg:relative lg:z-auto flex opacity-100' 
+                : 'absolute inset-0 translate-x-full lg:translate-x-0 z-10 hidden lg:flex opacity-0 lg:opacity-100'
             }`}>
               {!selectedUser ? <NoChatSelected /> : <ChatContainer />}
             </div>

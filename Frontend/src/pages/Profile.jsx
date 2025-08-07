@@ -1,7 +1,9 @@
-import { Camera, Loader2, Mail, User } from "lucide-react";
+import { LogOut, ChevronLeft, Camera, Loader2, Mail, User } from "lucide-react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateProfile } from "../store/slices/authSlice";
+import { logout } from "../store/slices/authSlice";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const { authUser, isUpdatingProfile } = useSelector((state) => state.auth);
@@ -37,11 +39,24 @@ const Profile = () => {
     data.append("avatar", formData.avatar);
     dispatch(updateProfile(data));
   };
+
+  const handleLogout = () => {
+    dispatch(logout());
+  };
+
+  const navigate = useNavigate();
+
   return (
     <>
       <div className="min-h-screen pt-20 bg-gray-50">
         <div className="max-w-2xl mx-auto p-4 py-8">
-          <div className="bg-white rounded-xl shadow-md p-6 space-y-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="mb-4 -mt-6 flex justify-center bg-blue-100 cursor-pointer px-3 py-1 rounded-full gap-1 text-sm text-blue-600 ">
+            <ChevronLeft/>
+            <h1 className="font-semibold text-center">Messages</h1>
+          </button>
+          <div className="bg-white rounded-xl shadow-xl p-6 space-y-8">
             <div className="text-center">
               <h1 className="text-2xl font-semibold text-gray-800">Profile</h1>
               <p className="mt-2 text-gray-500">Your profile information:</p>
@@ -52,13 +67,13 @@ const Profile = () => {
               <div className="relative">
                 <img
                   src={
-                    selectedImage || formData?.avatar || "/avatar-holder.avif"
+                    selectedImage || formData?.avatar || "/user-circle-svgrepo-com.svg"
                   }
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = "/avatar-holder.avif";
+                    e.target.src = "/user-circle-svgrepo-com.svg";
                   }}
-                  alt="/avatar-holder.avif"
+                  alt="/user-circle-svgrepo-com.svg"
                   className="w-32 h-32 rounded-full object-cover object-top border-4 border-gray-200"
                 />
 
@@ -118,7 +133,7 @@ const Profile = () => {
             <button
               onClick={handleUpdateProfile}
               disabled={isUpdatingProfile}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md transition duration-200 lex justify-center items-center gap-2">
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md transition duration-200 flex justify-center items-center gap-2">
               {isUpdatingProfile ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" /> Loading...{" "}
@@ -126,6 +141,12 @@ const Profile = () => {
               ) : (
                 "Update Profile"
               )}
+            </button>
+            <button
+              onClick={handleLogout}
+              className="w-full -mt-4 bg-red-300 inline-flex justify-center items-center gap-2 py-2 rounded-md text-sm font-medium text-red-700 hover:bg-red-100 transition">
+              <LogOut className="w-5 h-5 " />
+              <span className="">Logout</span>
             </button>
 
             <div className="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-6">
@@ -135,13 +156,13 @@ const Profile = () => {
               </h2>
               <div className="space-y-3 text-sm text-gray-600">
                 <div className="flex items-center justify-between p-2 border-b border-gray-200">
-                  <span className="font-Sans"> Member Since</span>
+                  <span className="font-Sans">Member Since</span>
                   <span className="font-semibold">
-                    {authUser?.CreatedAt?.split("!")[0]}
+                    {authUser?.createdAt?.split("T")[0]}
                   </span>
                 </div>
-                <div className="flex items-center justify-between py-2">
-                  <span>Account status</span>
+                <div className="flex items-center justify-between p-2">
+                  <span className="font-Sans">Account status</span>
                   <span className="text-green-600 font-medium">Active</span>
                 </div>
               </div>

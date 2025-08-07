@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import SidebarSkeleton from "../components/skeletons/SidebarSkeleton";
 import { getUsers, setSelectedUser } from "../store/slices/chatSlice";
-import { EllipsisVertical, Search, X } from "lucide-react";
+import { EllipsisVertical, LogOut, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { logout } from "../store/slices/authSlice";
 
@@ -10,6 +10,7 @@ const Sidebar = () => {
   const [ShowOnlineOnly, setShowOnlineOnly] = useState(false);
   const [isOpen, setisOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isClosing, setIsClosing] = useState(false);
 
   const { users, selectedUser, isUsersLoading } = useSelector(
     (state) => state.chat
@@ -43,14 +44,24 @@ const Sidebar = () => {
   };
 
   const handleUserSelect = (user) => {
-    dispatch(setSelectedUser(user));
+    // Only animate on mobile (screen width < 1024px)
+    if (window.innerWidth < 1024) {
+      setIsClosing(true);
+      setTimeout(() => {
+        dispatch(setSelectedUser(user));
+        setIsClosing(false);
+      }, 500); // Match animation duration
+    } else {
+      // Desktop - no animation
+      dispatch(setSelectedUser(user));
+    }
   };
 
   return (
     <>
-      <aside className="h-full w-[100vw] lg:w-72 border-r border-gray-200 flex flex-col transition-all duration-200 bg-white">
+      <aside className={`h-full ${selectedUser ? 'mt-0' : 'mt-16'} md:mt-0 w-[100vw] lg:w-72 border-r border-gray-200 flex flex-col transition-all duration-300 bg-white relative z-30 ${isClosing ? 'animate-slideOutLeft' : ''}`}>
         {/* header */}
-        <div className="flex justify-between items-center p-4 lg:p-3 mt-16 md:mt-0">
+        <div className="hidden md:flex justify-between items-center p-4 lg:p-3 md:mt-0">
           <Link
             to={`/profile/${authUser.id}`}
             className="flex justify-start items-center flex-1">
@@ -60,11 +71,11 @@ const Sidebar = () => {
                 src={
                   authUser?.avatar?.url
                     ? authUser.avatar.url
-                    : "/avatar-holder.avif"
+                    : "/user-circle-svgrepo-com.svg"
                 }
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = "/avatar-holder.avif";
+                  e.target.src = "/user-circle-svgrepo-com.svg";
                 }}
                 alt="User Avatar"
               />
@@ -87,23 +98,22 @@ const Sidebar = () => {
               <div className="flex flex-col absolute rounded-md shadow-xl px-2 py-1 top-8 right-0 z-50 bg-white border border-gray-200">
                 <Link
                   to={`/profile/${authUser.id}`}
-                  className="hover:bg-gray-100 px-3 py-2 rounded-md font-medium whitespace-nowrap"
+                  className="hover:bg-blue-100 px-3 py-1.5 rounded-md font-medium whitespace-nowrap"
                   onClick={() => setisOpen(false)}>
                   Profile
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className="hover:bg-gray-100 px-3 py-2 rounded-md font-medium text-left">
-                  Logout
-                </button>
+                <button onClick={handleLogout} className="hidden md:inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-red-700 hover:bg-red-100 transition">
+                    <LogOut className="w-5 h-5" />
+                    <span className="">Logout</span>
+                  </button>
               </div>
             )}
           </div>
         </div>
 
-        <div className="border-b border-gray-200 w-full p-5 -mt-2">
+        <div className="border-b border-gray-200 w-full pt-5 pl-5 pr-5 pb-3 -mt-2">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-800">
+            <span className="font-medium text-xl text-gray-800">
               All messages
             </span>
           </div>
@@ -130,21 +140,21 @@ const Sidebar = () => {
           </div>
 
           {/* Toggle buttons for All Users / Online Users */}
-          <div className="mt-3 flex gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="mt-3 flex justify-start items-center gap-2 rounded-lg ">
             <button
               onClick={() => setShowOnlineOnly(false)}
-              className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`text-sm px-3 py-1 cursor-pointer font-medium rounded-full transition-colors ${
                 !ShowOnlineOnly
-                  ? "bg-white text-gray-900 shadow-sm"
+                  ? "bg-blue-200 text-gray-900 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
               }`}>
               All Users
             </button>
             <button
               onClick={() => setShowOnlineOnly(true)}
-              className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`text-sm px-3 py-1 cursor-pointer font-medium rounded-full transition-colors ${
                 ShowOnlineOnly
-                  ? "bg-white text-gray-900 shadow-sm"
+                  ? "bg-blue-200 text-gray-900 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
               }`}>
               <span className="hidden sm:inline">Online</span>
@@ -163,40 +173,40 @@ const Sidebar = () => {
                 <button
                   key={user._id}
                   onClick={() => handleUserSelect(user)}
-                  className={`w-full md:mb-2 flex items-center px-3 py-3 lg:py-1 justify-start gap-3 transition-colors rounded-md ${
+                  className={`w-full md:mb-2 flex items-center px-3 py-3 lg:py-1 justify-start gap-3 transition-all duration-300 rounded-md hover:scale-[1.02] active:scale-[0.98] transform ${
                     selectedUser?._id === user._id
                       ? "bg-gray-200 ring-gray-200"
-                      : "hover:bg-gray-200"
+                      : "hover:bg-gray-200 hover:translate-x-1 lg:hover:translate-x-0"
                   }`}>
                   <div className="relative">
                     <img
-                      className="w-12 h-12 object-cover rounded-full"
+                      className="w-12 h-12 object-cover rounded-full transition-all duration-300"
                       src={
                         user?.avatar?.url
                           ? user.avatar.url
-                          : "/avatar-holder.avif"
+                          : "/user-circle-svgrepo-com.svg"
                       }
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = "/avatar-holder.avif";
+                        e.target.src = "/user-circle-svgrepo-com.svg";
                       }}
                       alt="User Avatar"
                     />
                     {onlineUsers.includes(user._id) && (
-                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white" />
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white animate-pulse transition-all duration-300" />
                     )}
                   </div>
                   {/* user info */}
                   <div className="text-left min-w-0 flex-1">
-                    <div className="font-medium text-gray-800 truncate">
+                    <div className="font-medium text-gray-800 truncate transition-all duration-300">
                       {user.username}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 transition-all duration-300">
                       {onlineUsers.includes(user._id) ? "Online" : "Offline"}
                     </div>
                   </div>
                 </button>
-                <hr className="w-[90%] mx-auto opacity-15 mb-2"/>
+                <hr className="w-[90%] mx-auto opacity-6 mb-2 transition-all duration-300"/>
                 </>
                 
               );

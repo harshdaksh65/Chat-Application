@@ -73,7 +73,7 @@ const ChatContainer = () => {
 
   return (
     <>
-      <div className="flex-1 flex flex-col overflow-hidden bg-white w-full mt-16 md:mt-0">
+      <div className="flex-1 flex flex-col overflow-hidden bg-white w-full mt-0 relative z-30 animate-fadeIn">
         <ChatHeader />
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {messages.length > 0 &&
@@ -89,18 +89,18 @@ const ChatContainer = () => {
                   }`}
                   ref={index === messages.length - 1 ? messageEndRef : null}>
                   <div
-                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border shrink-0 ${
+                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden  shrink-0 ${
                       isSender ? "order-2 ml-2 sm:ml-3" : "order-1 mr-2 sm:mr-3"
                     }`}>
                     <img
                       src={
                         isSender && authUser?.avatar?.url
-                          ? authUser.avatar.url || "/avatar-holder.avif"
-                          : selectedUser?.avatar?.url || "/avatar-holder.avif"
+                          ? authUser.avatar.url || "/user-circle-svgrepo-com.svg"
+                          : selectedUser?.avatar?.url || "/user-circle-svgrepo-com.svg"
                       }
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = "/avatar-holder.avif";
+                        e.target.src = "/user-circle-svgrepo-com.svg";
                       }}
                       alt="User Avatar"
                       className="w-full h-full object-cover"
@@ -133,9 +133,9 @@ const ChatContainer = () => {
                       </>
                     )}
 
-                    {message.text && <p className="break-words">{message.text}</p>}
+                    {message.text && <p className="break-words ">{message.text}</p>}
 
-                    <span className="block text-[10px] text-right text-gray-400 mt-1">
+                    <span className="block text-[10px] text-right text-gray-400 ">
                       {formatMessageTime(message.createdAt)}
                     </span>
                   </div>

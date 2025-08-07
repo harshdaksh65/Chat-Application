@@ -5,14 +5,17 @@ import { logout } from "../store/slices/authSlice";
 
 const Navbar = () => {
   const { authUser } = useSelector((state) => state.auth);
+  const { selectedUser } = useSelector((state) => state.chat);
   const dispatch = useDispatch();
 
   const handleLogout = () => {
     dispatch(logout());
   };
 
+  // Hide navbar on mobile when chat is open
+  const shouldHideOnMobile = selectedUser !== null;
   return <>
-    <header className="fixed top-0 w-full z-40 bg-white/80 backdrop-blur-lg border-b border-gray-200 shadow-sm">
+    <header className={`fixed top-0 w-full z-40 bg-white/80 backdrop-blur-lg border-b border-gray-200 shadow-sm ${shouldHideOnMobile ? 'hidden lg:block' : 'block'}`}>
       <div className="max-w-7xl mx-auto px-4 h-16">
         <div className="flex items-center justify-between h-full">
           {/* // Logo or Brand Name */}
@@ -34,10 +37,7 @@ const Navbar = () => {
                     <User className="w-5 h-5 text-blue-600" />
                     <span className="hidden sm:inline text-gray-800">{authUser.name}</span>
                   </Link>
-                  <button onClick={handleLogout} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-red-700 hover:bg-red-100 transition">
-                    <LogOut className="w-5 h-5 text-blue-600" />
-                    <span className="text-gray-800">Logout</span>
-                  </button>
+                  
                 </>
               )
             }
