@@ -1,18 +1,13 @@
-import {io } from 'socket.io-client';
+import { io } from 'socket.io-client';
 
 let socket = null;
 
 export const connectSocket = (userId) => {
-    socket = io(
-        import.meta.env.MODE === 'development'
-            ? 'http://localhost:3000' : '/',
-        {
-            query: {
-                userId
-            }
-        }
-    );
-
+    const backendWsUrl = import.meta.env.VITE_BACKEND_WS_URL;
+    socket = io(backendWsUrl, {
+        query: { userId },
+        withCredentials: true
+    });
     return socket;
 };
 
@@ -23,4 +18,4 @@ export const disconnectSocket = () => {
         socket.disconnect();
         socket = null;
     }
-}
+};

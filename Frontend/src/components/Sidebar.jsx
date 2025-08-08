@@ -159,7 +159,7 @@ const Sidebar = () => {
               }`}>
               <span className="hidden sm:inline">Online</span>
               <span className="sm:hidden">Online</span>
-              ({onlineUsers.filter((id) => id !== authUser._id).length-1})
+              ({onlineUsers.filter((id) => id !== authUser._id).length})
             </button>
           </div>
         </div>
