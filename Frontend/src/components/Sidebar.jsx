@@ -63,7 +63,7 @@ const Sidebar = () => {
         {/* header */}
         <div className="hidden md:flex justify-between items-center p-4 lg:p-3 md:mt-0">
           <Link
-            to={`/profile/${authUser.id}`}
+            to={`/profile/${authUser._id}`}
             className="flex justify-start items-center flex-1">
             <div className="flex items-center justify-center lg:justify-start gap-2 transition-colors rounded-md">
               <img
@@ -97,7 +97,7 @@ const Sidebar = () => {
             {isOpen && (
               <div className="flex flex-col absolute rounded-md shadow-xl px-2 py-1 top-8 right-0 z-50 bg-white border border-gray-200">
                 <Link
-                  to={`/profile/${authUser.id}`}
+                  to={`/profile/${authUser._id}`}
                   className="hover:bg-blue-100 px-3 py-1.5 rounded-md font-medium whitespace-nowrap"
                   onClick={() => setisOpen(false)}>
                   Profile

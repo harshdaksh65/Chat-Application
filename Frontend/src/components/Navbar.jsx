@@ -33,7 +33,7 @@ const Navbar = () => {
             {
               authUser && (
                 <>
-                  <Link to={`/profile/${authUser.id}`} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition">
+                  <Link to={`/profile/${authUser._id}`} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition">
                     <User className="w-5 h-5 text-blue-600" />
                     <span className="hidden sm:inline text-gray-800">{authUser.name}</span>
                   </Link>
