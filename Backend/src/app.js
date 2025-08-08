@@ -10,7 +10,10 @@ const messageRoutes = require('./Routes/message.route');
 
 const app = express();
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
+    origin: [
+        'http://localhost:5173',           
+        'https://talkie-ai-seven.vercel.app'
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
